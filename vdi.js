@@ -39,7 +39,7 @@ function instancessql(addel, ins_nm, sub_addel) {
 	var offset = $("#ins_offset").val();
 	var instance_int = $("#instance_int").val();
 
-	var rate = 3000;
+	var rate = 2000;
 	clearInterval(instance_int);
 
 	instance_int = setInterval(function() {
@@ -60,6 +60,7 @@ function instancessql(addel, ins_nm, sub_addel) {
 		var xhr1 = new ActiveXObject("Microsoft.XMLHTTP");
 	}
 	if (addel == 'add') {
+		$('#add_button').hide();
 		limit = document.getElementById("limit_session").value;
 		xhr1.onreadystatechange = function() {
 			if (xhr1.readyState == 4 && xhr1.status == 200) {
@@ -68,8 +69,8 @@ function instancessql(addel, ins_nm, sub_addel) {
 				var c = document.getElementById("flv_nm").value;
 				var d = document.getElementById("sec_grp").value;
 				var e = document.getElementById("flt_ip").value;
-
-				uri = "instancesql.php?fn=add&server=" + a + "&img_nm=" + b + "&flv_nm=" + c + "&sec_grp=" + d + "&flt_ip=" + e + "&limit=" + limit + "&offset=" + offset;
+				var i = document.getElementById("ins_count").value;
+				uri = "instancesql.php?fn=add&server=" + a + "&img_nm=" + b + "&flv_nm=" + c + "&sec_grp=" + d + "&flt_ip=" + e + "&ins_count=" + i + "&limit=" + limit + "&offset=" + offset;
 				if (sub_addel === "resize") {
 					var f = document.getElementById("org_ins_nm").value;
 					var g = document.getElementById("org_flv_nm").value;
@@ -92,23 +93,18 @@ function instancessql(addel, ins_nm, sub_addel) {
 		xhr1.send();
 	} else if (addel === "del") {
 
-		xhr1.onreadystatechange = function() {
-			if (xhr1.readyState == 4 && xhr1.status == 200) {
-				uri = "instancesql.php?fn=del&server=" + ins_nm + "&limit=" + limit + "&offset=" + offset;
+		uri = "instancesql.php?fn=del&server=" + ins_nm + "&limit=" + limit + "&offset=" + offset;
 
-				xhr.onreadystatechange = function() {
+		xhr.onreadystatechange = function() {
 
-					if (xhr.readyState == 4 && xhr.status == 200) {
-						document.getElementById("table").innerHTML = xhr.responseText;
-						document.getElementById(limit).selected = true;
-					}
-				}
-				xhr.open("GET", uri, true);
-				xhr.send();
+			if (xhr.readyState == 4 && xhr.status == 200) {
+				document.getElementById("table").innerHTML = xhr.responseText;
+				document.getElementById(limit).selected = true;
 			}
 		}
-		xhr1.open("GET", "instanceadd.php", true);
-		xhr1.send();
+		xhr.open("GET", uri, true);
+		xhr.send();
+
 	} else if (addel === "del1") {
 
 		xhr1.onreadystatechange = function() {
@@ -140,6 +136,20 @@ function instancessql(addel, ins_nm, sub_addel) {
 		}
 		xhr1.open("GET", "instancesql.php", true);
 		xhr1.send();
+	} else if (addel === "snp") {
+
+		uri = "instancesql.php?fn=snp&server=" + ins_nm + "&img_nm=" + sub_addel;
+
+		xhr.onreadystatechange = function() {
+
+			if (xhr.readyState == 4 && xhr.status == 200) {
+				document.getElementById("table").innerHTML = xhr.responseText;
+				document.getElementById(limit).selected = true;
+			}
+		}
+		xhr.open("GET", uri, true);
+		xhr.send();
+
 	} else if (addel === "offs") {
 		limit = parseInt(document.getElementById("ins_limit").value);
 		offset = parseInt(document.getElementById("ins_offset").value);
@@ -711,7 +721,7 @@ function overviewsql() {
 function vdi_summary_chart(a, b, c) {
 	var vm_offset = $("#vm_offset").val();
 	vm_offset = vm_offset.toString();
-	
+
 	url = "vdi_overview_chart.php?vm_offset=" + vm_offset;
 	if (window.XMLHttpRequest) {
 		var xhr = new XMLHttpRequest();
@@ -1196,41 +1206,41 @@ function imageadd(up_ab) {
 	xhr1.send();
 }
 
-function test_image() {
+function snapshot(server) {
 	if (window.XMLHttpRequest) {
-		var xhr1 = new XMLHttpRequest();
+		var xhr = new XMLHttpRequest();
 
 	} else {
-		var xhr1 = new ActiveXObject("Microsoft.XMLHTTP");
+		var xhr = new ActiveXObject("Microsoft.XMLHTTP");
+
 	}
 
-	xhr1.onreadystatechange = function() {
-		if (xhr1.readyState == 4 && xhr1.status == 200) {
-			document.getElementById("table").innerHTML = xhr1.responseText;
-			$(document).ready(function() {
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == 4 && xhr.status == 200) {
 
-				var settings = {
-					url : "upload.php",
-					method : "POST",
-					allowedTypes : "iso,img",
-					fileName : "myfile",
-					multiple : false,
-					onSuccess : function(files, data, xhr) {
-						$("#status").html("<font color='green'>Upload is success</font>");
+			document.getElementById("snapshot_table").innerHTML = xhr.responseText;
+			document.getElementById("snp_server").value = server;
 
+			$("#snapshot").dialog({
+				resizable : false,
+				height : 250,
+				width : 450,
+				modal : true,
+				buttons : {
+					"OK" : function() {
+						snp_img = document.getElementById("snp_img_nm").value;
+						instancessql("snp", server, snp_img);
+						$(this).dialog("close");
 					},
-					onError : function(files, status, errMsg) {
-						$("#status").html("<font color='red'>Upload is Failed</font>");
+					Cancel : function() {
+						$(this).dialog("close");
+
 					}
 				}
-
-				$("#mulitplefileuploader").uploadFile(settings);
-
 			});
 
 		}
 	};
-	xhr1.open("GET", "test_image.php", true);
-	xhr1.send();
+	xhr.open("GET", "snapshot.php", true);
+	xhr.send();
 }
-

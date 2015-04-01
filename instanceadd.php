@@ -1,7 +1,7 @@
 <html>
 	<head>
 		<?php
-		
+
 		require 'loginproc.php';
 		$flt_ip_stat = $_GET['flt_ip_chk'];
 		?>
@@ -49,6 +49,13 @@
 						?>
 					</select></td>
 				</tr>
+
+				<tr id="ins_count_tr">
+					<td class="leftd">Instance Count:</td><td>
+					<input type="number"  id="ins_count" name="ins_count" min=1 max=50  value=1 />
+					</td>
+				</tr>
+
 				<tr id="sec_grp_tr">
 					<td class="leftd">Security Group:</td><td>
 					<select id='sec_grp'>
@@ -79,14 +86,14 @@
 						?>
 					</select></td>
 				</tr>
-				
+
 				<tr>
 					<td>&nbsp;</td><td>&nbsp;</td>
 				</tr>
 				<tr>
 					<td class="leftd"></td>
 					<td>
-					<input type="submit" value="OK"  id="add_button" class="addel-button"/>
+					<input type="submit" value="OK"  id="add_button" class="addel-button" />
 					<input type="button" value="CANCEL" id='del' onclick='instancessql()' class="addel-button"/>
 					<input type="hidden" id="limit_session" value="" />
 					</td>

@@ -18,9 +18,9 @@ $policy_nm="policy1";
 $power_state=array("NoState","Running","NoState","PAUSED","Shutdown","NoState","Crashed","Suspended","Nostate","Building");
 //$vdinav=array("Overview","Instances","Flavors","Firewall","Floatingip","Images");
 $leftnav=array("OVERVIEW","INSTANCES","FLAVORS","FIREWALL","FLOATINGIP","IMAGES");
-$num_ins=array(1,15,30);
-$ins_limit=$num_ins[0];
-$vm_limit=1;
+$num_ins=array(10,15,30);
+$ins_limit=$num_ins[2];
+$vm_limit=10;
 $core_multiplier=7.5;
 
 ?>

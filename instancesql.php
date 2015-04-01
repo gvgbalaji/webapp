@@ -13,6 +13,8 @@ $org_ins_nm = $_GET['org_ins_nm'];
 $org_flv_nm = $_GET['org_flv_nm'];
 $org_flt_ip = $_GET['org_flt_ip'];
 
+$ins_count = $_GET['ins_count'];
+
 $auth_cmd = $_SESSION['auth_cmd'];
 
 #$q1 = "SELECT display_name,(select floating_ip_address from neutron.floatingips where fixed_port_id = (select id   from neutron.ports where device_id =uuid ) )as External_ip,(select ip_address from neutron.ipallocations where port_id = (select id  from neutron.ports where device_id =uuid ) )as Internal_ip,power_state,vm_state,task_state,memory_mb as allocated_ram,root_gb as allocated_harddisk FROM nova.instances where vm_state!='deleted' order by memory_mb;";
@@ -20,12 +22,15 @@ $auth_cmd = $_SESSION['auth_cmd'];
 $limit = $_GET['limit'];
 $offset = $_GET['offset'];
 
-$num_rows = mysql_result(mysql_query("select count(*) from nova.instances where deleted=0 and vm_state!='deleted'",$con2), 0);
+$num_rows = mysql_result(mysql_query("select count(*) from nova.instances where deleted=0 and vm_state!='deleted'", $con2), 0);
 $total_pages = ceil($num_rows / $limit);
+if ($num_rows == 0) {
+	$total_pages = 1;
+}
 $current_page = ceil(($offset + 1) / $limit);
 
 function instanceadd() {
-	global $auth_cmd, $server, $img_nm, $flv_nm, $sec_grp, $net_id, $flt_ip,$max_count;
+	global $auth_cmd, $server, $img_nm, $flv_nm, $sec_grp, $net_id, $flt_ip, $max_count;
 
 	$cmd1 = "nova $auth_cmd boot  --image $img_nm --flavor $flv_nm --security-groups $sec_grp --nic net-id=$net_id   $server";
 	//echo $cmd1;
@@ -129,10 +134,6 @@ if ($sub_fn == 'activity') {
 			}
 		}
 
-	} elseif ($fn == 'reboot') {
-		$cmd = "nova $auth_cmd reboot $server";
-		//echo $cmd;
-		exec($cmd);
 	} elseif ($fn == 'cons') {
 
 		$cmd = "nova $auth_cmd get-vnc-console $server novnc | awk '{split($4,a,\"Url\");print a[1] }' | awk '/http/'";
@@ -140,12 +141,27 @@ if ($sub_fn == 'activity') {
 		exec($cmd, $output, $result);
 		//echo $output[0];
 		echo "<input type='hidden' id='novnc' value='$output[0]'/>";
+	} elseif ($fn == 'reboot') {
+		$cmd = "nova $auth_cmd reboot $server";
+		//echo $cmd;
+		exec($cmd);
 	}
 } else {
 	if ($fn == 'add') {
 		$q = "SELECT id FROM neutron.networks where name='lan-net' and status ='ACTIVE';";
 		$net_id = mysql_result(mysql_query($q), 0, 0);
-		instanceadd();
+		if ($ins_count == 1) {
+			instanceadd();
+		} elseif ($ins_count > 1) {
+			$flt_ip = "none";
+			$base_server = $server;
+
+			for ($i = 1; $i <= $ins_count; $i++) {
+				$server = $server . $i;
+				instanceadd();
+				$server = $base_server;
+			}
+		}
 		floatip_associate();
 	} elseif ($fn == 'resize') {
 		if ($server != $org_ins_nm) {
@@ -179,6 +195,10 @@ if ($sub_fn == 'activity') {
 			}
 		}
 
+	} elseif ($fn == 'snp') {
+		$cmd = "nova $auth_cmd image-create $server $img_nm";
+		//echo $cmd;
+		exec($cmd);
 	}
 }
 
@@ -252,7 +272,7 @@ while ($row = mysql_fetch_array($result)) {
 	$q2 = "select flavorid from nova.instance_types  where id = $row[8] ";
 	$ins_typ_id = mysql_result(mysql_query($q2, $con2), 0, 0);
 
-	echo "<tr><td><input type='checkbox' class='group' id='" . $row[0] . "' value='" . $row[0] . "' name='group' ></td><td>$nm</td><td>$row[1]</td><td>$row[2]</td><td>$row[3] $row[5]</td><td>$ram</td><td>$row[7] GB</td><td><button title='Start' class='vdi_btn' id='start_$row[0]' onclick='action(\"start\",\"$row[0]\",\"$limit\",\"$offset\")' $id1><img class='vdi_btn_img' src='images/start.ico'/></button><button title='Stop' class='vdi_btn' id='stop_$row[0]' onclick='action(\"stop\",\"$row[0]\",\"$limit\",\"$offset\")' $id2><img class='vdi_btn_img' src='images/shutdown.ico'/></button><button title='Reboot' class='vdi_btn' id='reboot_$row[0]' onclick='action(\"reboot\",\"$row[0]\",\"$limit\",\"$offset\")' $id3><img class='vdi_btn_img' src='images/restart.ico'/></td><td></button><button title='Edit' class='vdi_btn' id='config_$row[0]' onclick='instanceadd(\"resize\",\"$row[0]\",\"$ins_typ_id\",\"$row[1]\")'><img class='vdi_btn_img' src='images/config.ico'/></button><button title='Delete' class='vdi_btn' id='ip_$row[0]' onclick='delconf(instancessql,\"del\",\"$row[0]\",\"\",\"$limit\",\"$offset\")'><img class='vdi_btn_img' src='images/delete.ico'/></button></td></tr>";
+	echo "<tr><td><input type='checkbox' class='group' id='" . $row[0] . "' value='" . $row[0] . "' name='group' ></td><td>$nm</td><td>$row[1]</td><td>$row[2]</td><td>$row[3] $row[5]</td><td>$ram</td><td>$row[7] GB</td><td><button title='Start' class='vdi_btn' id='start_$row[0]' onclick='action(\"start\",\"$row[0]\",\"$limit\",\"$offset\")' $id1><img class='vdi_btn_img' src='images/start.ico'/></button><button title='Stop' class='vdi_btn' id='stop_$row[0]' onclick='action(\"stop\",\"$row[0]\",\"$limit\",\"$offset\")' $id2><img class='vdi_btn_img' src='images/shutdown.ico'/></button><button title='Reboot' class='vdi_btn' id='reboot_$row[0]' onclick='action(\"reboot\",\"$row[0]\",\"$limit\",\"$offset\")' $id3><img class='vdi_btn_img' src='images/restart.ico'/></button></td><td><button title='Edit' class='vdi_btn' id='config_$row[0]' onclick='instanceadd(\"resize\",\"$row[0]\",\"$ins_typ_id\",\"$row[1]\")'><img class='vdi_btn_img' src='images/config.ico'/></button><button title='Snapshot' class='vdi_btn' id='snapshot_$row[0]' onclick='snapshot(\"$row[0]\")' ><img class='vdi_btn_img' src='images/snapshot.ico'/></button><button title='Delete' class='vdi_btn' id='ip_$row[0]' onclick='delconf(instancessql,\"del\",\"$row[0]\",\"\",\"$limit\",\"$offset\")'><img class='vdi_btn_img' src='images/delete.ico'/></button></td></tr>";
 }
 echo "</table><input type='hidden' id='offset' value='$offset'/><input type='hidden' id='current_page' value='$current_page'/><input type='hidden' id='total' value=$total_pages/><input type='hidden' id='lim' value=$limit />";
 echo "</div>";

@@ -5,7 +5,7 @@
 
 		require ("loginproc.php");
 		?>
-		<title>NaanalNetworks</title>
+		<title>Naanal Technologies</title>
 		<script language="javascript" src="home.js"></script>
 		<script language="javascript" src="vdi.js"></script>
 		<script src="js/jquery.js" ></script>
@@ -84,25 +84,18 @@
 						<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?
 					</p>
 				</div>
-				<div id="user_popup" title="User Stats">
-					<p id="user_table">
+				
+				<div id="snapshot" title="Snapshot">
+					<p id="snapshot_table">
 
 					</p>
 				</div>
-				<div id="filter_popup" title="WebFilter Import">
-					<p id="filter_table">
-
-					</p>
-				</div>
-				<div id="import_user_popup" title="User Import">
-					<p id="import_user_table">
-
-					</p>
-				</div>
-
+				
 				<div id="footer">
-					© Naanal Networks
+					
+					© Naanal Technologies
 				</div>
+				
 			</div>
 	</body>
 </html>

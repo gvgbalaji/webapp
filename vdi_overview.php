@@ -6,9 +6,8 @@
 
 		exec(" df -h -BG --total | grep 'total' | awk '{print $2}' && nproc | awk '{print $0*$core_multiplier}' && vmstat -s  | grep 'total memory' | awk '{print $1/1000}'", $out, $res);
 		$num_rows = mysql_result(mysql_query("select count(*) from nova.instances where deleted=0 and vm_state!='deleted'", $con2), 0);
-		
-		$total_pages = ceil($num_rows / $vm_limit );
-		
+
+		$total_pages = ceil($num_rows / $vm_limit);
 		?>
 	</head>
 	<body >
