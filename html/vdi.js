@@ -70,12 +70,18 @@ function instancessql(addel, ins_nm, sub_addel) {
 				var d = document.getElementById("sec_grp").value;
 				var e = document.getElementById("flt_ip").value;
 				var i = document.getElementById("ins_count").value;
-				uri = "instancesql.php?fn=add&server=" + a + "&img_nm=" + b + "&flv_nm=" + c + "&sec_grp=" + d + "&flt_ip=" + e + "&ins_count=" + i + "&limit=" + limit + "&offset=" + offset;
+				var j = 0;
+				if (document.getElementById("auto_start").checked == true) {
+					var j = 1;
+				}
+
+				uri = "instancesql.php?fn=add&server=" + a + "&img_nm=" + b + "&flv_nm=" + c + "&sec_grp=" + d + "&flt_ip=" + e + "&ins_count=" + i + "&limit=" + limit + "&offset=" + offset + "&autostart=" + j;
+
 				if (sub_addel === "resize") {
 					var f = document.getElementById("org_ins_nm").value;
 					var g = document.getElementById("org_flv_nm").value;
 					var h = document.getElementById("org_flt_ip").value;
-					uri = "instancesql.php?fn=resize&server=" + a + "&flv_nm=" + c + "&flt_ip=" + e + "&org_ins_nm=" + f + "&org_flv_nm=" + g + "&org_flt_ip=" + h + "&limit=" + limit + "&offset=" + offset;
+					uri = "instancesql.php?fn=resize&server=" + a + "&flv_nm=" + c + "&flt_ip=" + e + "&org_ins_nm=" + f + "&org_flv_nm=" + g + "&org_flt_ip=" + h + "&limit=" + limit + "&offset=" + offset + "&autostart=" + j;
 
 				}
 				xhr.onreadystatechange = function() {
@@ -237,7 +243,11 @@ function instanceadd(addel, a, b, c, d, e) {
 				$("#img_nm_tr").hide();
 
 				$("#sec_grp_tr").hide();
-
+				if (d == 1) {
+					$("#auto_start").prop("checked", true);
+				} else {
+					$("#auto_start").prop("checked", false);
+				}
 				document.getElementById("instanceform").action = "javascript:instancessql('add','','resize')";
 
 			}
@@ -1243,4 +1253,136 @@ function snapshot(server) {
 	};
 	xhr.open("GET", "snapshot.php", true);
 	xhr.send();
+}
+
+//system
+
+function systemsql() {
+	if (window.XMLHttpRequest) {
+		var xhr = new XMLHttpRequest();
+
+	} else {
+		var xhr = new ActiveXObject("Microsoft.XMLHTTP");
+
+	}
+
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == 4 && xhr.status == 200) {
+
+			document.getElementById("table").innerHTML = xhr.responseText;
+
+		}
+	}
+	xhr.open("GET", "system.php", true);
+	xhr.send();
+
+}
+
+function host_shutdown() {
+	if (window.XMLHttpRequest) {
+		var xhr = new XMLHttpRequest();
+
+	} else {
+		var xhr = new ActiveXObject("Microsoft.XMLHTTP");
+
+	}
+
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == 4 && xhr.status == 200) {
+
+			document.getElementById("host_table").innerHTML = xhr.responseText;
+
+			$("#host").dialog({
+				resizable : false,
+				height : 300,
+				width : 500,
+				modal : true,
+				buttons : {
+					"OK" : function() {
+						//$(this).dialog("close");
+						auth("shutdown", this);
+
+					},
+					Cancel : function() {
+						$(this).dialog("close");
+
+					}
+				}
+			});
+
+		}
+	};
+	xhr.open("GET", "host_shutdown.php", true);
+	xhr.send();
+}
+
+function host_restart() {
+	if (window.XMLHttpRequest) {
+		var xhr = new XMLHttpRequest();
+
+	} else {
+		var xhr = new ActiveXObject("Microsoft.XMLHTTP");
+
+	}
+
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == 4 && xhr.status == 200) {
+
+			document.getElementById("host_table").innerHTML = xhr.responseText;
+
+			$("#host").dialog({
+				resizable : false,
+				height : 300,
+				width : 500,
+				modal : true,
+				buttons : {
+					"OK" : function() {
+						auth("reboot", this);
+					},
+					Cancel : function() {
+						$(this).dialog("close");
+
+					}
+				}
+			});
+
+		}
+	};
+	xhr.open("GET", "host_shutdown.php", true);
+	xhr.send();
+
+}
+
+function auth(fn, obj) {
+	user = document.getElementById("username").value;
+	pass = document.getElementById("password").value;
+
+	url = "shutdown.php?fn=" + fn + "&username=" + user + "&password=" + pass;
+	if (window.XMLHttpRequest) {
+		var xhr = new XMLHttpRequest();
+
+	} else {
+		var xhr = new ActiveXObject("Microsoft.XMLHTTP");
+
+	}
+
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == 4 && xhr.status == 200) {
+			output = JSON.parse(xhr.responseText);
+			document.getElementById("result").innerHTML = output.reply;
+			if (output.key == 0) {
+				document.getElementById("password").value = "";
+
+			} else if (output.key == 1) {
+				setTimeout(function() {
+					$(obj).dialog("close");
+					$('#logout').click();
+				}, 5000);
+			}
+
+		}
+	};
+	xhr.open("GET", url, true);
+	xhr.send();
+
 }

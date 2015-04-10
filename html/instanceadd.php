@@ -86,6 +86,11 @@
 						?>
 					</select></td>
 				</tr>
+				<tr>
+					<td class="leftd">Autostart Enabled</td><td>
+					<input type="checkbox" id="auto_start" checked  />					
+					</td>
+				</tr>
 
 				<tr>
 					<td>&nbsp;</td><td>&nbsp;</td>
@@ -98,6 +103,7 @@
 					<input type="hidden" id="limit_session" value="" />
 					</td>
 				</tr>
+
 			</table>
 			<input type="hidden" id="org_ins_nm" value=""/>
 			<input type="hidden" id="org_flv_nm" value=""/>
