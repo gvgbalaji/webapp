@@ -18,4 +18,4 @@ for ins in cur.fetchall():
 		print e
 
 
-cur.close()
+
